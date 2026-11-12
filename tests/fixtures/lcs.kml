@@ -1,0 +1,116 @@
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+<name>Lane Closures (fixture)</name>
+<Style id="lcs"/><Style id="full-closure"/><Style id="fullClosurePath"/>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/LaneClosures.png?v=4" />
+            Lane Closure
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">Southbound 1 Lane Closure</h2>
+        
+        <p class="iw-text">From  Cypress St to Noyo River Bridge 10-176</p>
+            <p class="iw-text">1 of 2 general purpose lanes closed Due to Roadway Excavation</p>
+            <p class="iw-text">Expected to end at 2:59pm Nov 30, 2026</p>
+        
+        <div style='font-size:xx-small;'>Closure ID: C1GB, Log Number: 2</div>
+
+        <p class="iw-attribution">
+            Information courtesy of <strong>Caltrans</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:24am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#lcs</styleUrl>
+  <Point><coordinates>-123.806297,39.432721,0</coordinates></Point>
+</Placemark>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/LaneClosures.png?v=4" />
+            Lane Closure
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">Northbound 1 Lane Closure</h2>
+        
+        <p class="iw-text">From  Hare Creek Bridge 10-175 to North Harbor Dr</p>
+            <p class="iw-text">1 of 3 general purpose lanes closed Due to Roadway Excavation</p>
+            <p class="iw-text">Expected to end at 2:59pm Nov 30, 2026</p>
+        
+        <div style='font-size:xx-small;'>Closure ID: C1GB, Log Number: 1</div>
+
+        <p class="iw-attribution">
+            Information courtesy of <strong>Caltrans</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:24am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#lcs</styleUrl>
+  <Point><coordinates>-123.808059,39.418161,0</coordinates></Point>
+</Placemark>
+<Placemark>
+  <name>T84HB Log 1 path</name>
+  <styleUrl>#fullClosurePath</styleUrl>
+  <MultiGeometry>
+<LineString>
+  <altitudeMode>clampToGround</altitudeMode>
+  <extrude>0</extrude><tesselate>0</tesselate>
+  <coordinates>-122.13270179958,37.495429763178,0
+-122.1325138585,37.495626081516,0
+  </coordinates>
+</LineString>
+  </MultiGeometry>
+
+</Placemark>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/FullClosures.png?v=4" />
+            Full Closure
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">Northbound 101 On Ramp Full Closure</h2>
+        
+        <p class="iw-text">From  Airport Rd</p>
+            <p class="iw-text"> Due to Striping Operation</p>
+            <p class="iw-text">Expected to end at 6:01pm Nov 12, 2026</p>
+        
+        <div style='font-size:xx-small;'>Closure ID: C101ZE, Log Number: 9</div>
+
+        <p class="iw-attribution">
+            Information courtesy of <strong>Caltrans</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:24am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#full-closure</styleUrl>
+  <Point><coordinates>-124.115527,40.969321,0</coordinates></Point>
+</Placemark>
+</Document>
+</kml>

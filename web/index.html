@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nearme — CHP incidents & Caltrans lane closures</title>
+<link rel="stylesheet" href="/vendor/leaflet.css">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header>
+  <div class="brand">nearme<span>CHP incidents · Caltrans lane closures</span></div>
+
+  <form id="searchForm" autocomplete="off">
+    <input id="q" type="search" placeholder="find a place, ZIP, or city…" aria-label="Search place">
+    <button type="submit">Go</button>
+  </form>
+
+  <button id="meBtn" class="accent" title="Use my location (n)">Near me</button>
+
+  <label class="field">Radius
+    <select id="radius">
+      <option value="5">5 mi</option>
+      <option value="10">10 mi</option>
+      <option value="25" selected>25 mi</option>
+      <option value="60">60 mi</option>
+      <option value="150">150 mi</option>
+      <option value="0">whole view</option>
+    </select>
+  </label>
+
+  <div id="chips" role="group" aria-label="Closure severity"></div>
+
+  <label class="check"><input type="checkbox" id="srcChp" checked> CHP</label>
+  <label class="check"><input type="checkbox" id="srcCa" checked> Caltrans</label>
+
+  <div class="status">
+    <span id="count">…</span>
+    <span id="feed">…</span>
+    <button id="refreshBtn" title="Refetch upstream">↻</button>
+  </div>
+</header>
+
+<main>
+  <aside id="panel">
+    <div class="panel-head">
+      <strong>Nearest first</strong>
+      <span id="panelNote">enable “Near me”, or search a place</span>
+    </div>
+    <ul id="list"></ul>
+    <div class="disclaimer">
+      <strong>Read the quotes.</strong> A Caltrans LCS record states its closure
+      explicitly. A CHP level is inferred from dispatcher shorthand for a call from a
+      motorist — the quoted CAD line is the evidence, the label is a guess. Coordinates
+      are approximate; nothing here knows your direction of travel.
+    </div>
+  </aside>
+
+  <div id="map"></div>
+</main>
+
+<footer>
+  <span id="attrib"></span>
+  <span>Data via quickmap.dot.ca.gov (unofficial mirror of a public display).</span>
+</footer>
+
+<script src="/vendor/leaflet.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

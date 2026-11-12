@@ -1,0 +1,14 @@
+# local config — holds personal home/work coordinates
+config.json
+
+# runtime artifacts / scratch output
+.cache/
+*.log
+ev.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/

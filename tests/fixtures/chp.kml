@@ -1,0 +1,151 @@
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+<name>CHP Incidents (fixture)</name>
+<Style id="chp"/><Style id="full-closure"/>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/CHPIncidentInfo.png?v=4" />
+            CHP Incident 261112SA0129
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">1125-Traffic Hazard</h2>
+        
+        <p class="iw-text">Nov 12 2026  7:21AM <br> Madison Ave / San Juan Ave</p>
+        <p class="iw-text">Nov 12 2026  7:22AM [2] RP POSS SAW VEH PULL ON TO SIDEWALK IN HIS REARVIEW MIRROR<br />Nov 12 2026  7:21AM [1] WHI TOYT COA / 1125 IN SLOW LN<br /></p>
+        
+        <p class="iw-attribution">
+            Information courtesy of <strong>CHP</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:25am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#chp</styleUrl>
+  <Point><coordinates>-121.292268,38.663579,0</coordinates></Point>
+</Placemark>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/CHPIncidentInfo.png?v=4" />
+            CHP Incident 261112LAFSP0024
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">1183-Trfc Collision-Unkn Inj</h2>
+        
+        <p class="iw-text">Nov 12 2026  6:55AM <br> Sr60 W / Phillips Ranch Rd</p>
+        <p class="iw-text">Nov 12 2026  7:20AM [18] [Notification] [CHP]-1039 3A - OP Y279  S/O# 58656999   PRO TOWING AND SERVICES (XXX) XXX-XXXX ETA 40  [Shared]<br />Nov 12 2026  7:12AM [15] 81-Z1 RDWY CLR - FSP ABLE TO GET VEH TO RS  [Shared]<br />Nov 12 2026  7:11AM [14] 21B CHP 97 // VEH IN TOW [Shared]<br />Nov 12 2026  7:05AM [13] RP CONFIRM TC OCCD WB / COPIES CHP HAS CALL [Shared]<br />Nov 12 2026  7:05AM [12] 21B 97 AT PHILLIPS RANCH TRYING TO MOVE 1 VEH TO RS // 2ND VEH ON RS [Shared]<br />Nov 12 2026  7:03AM [10] [Appended, 07:04:13] [4] RP ADV BOYFRIENDS CELL CALLED HER TO ADV OF A TC IN THIS AREA  [Shared]<br />Nov 12 2026  7:03AM [7] [Appended, 07:04:13] [1] BLIND TRANS  [Shared]<br />Nov 12 2026  7:03AM [5] PER DUPE BLK LEXUS VS SD BLKG  # 1 LANE  [Shared]<br />Nov 12 2026  6:55AM [1] [1] 2 VEH TC / RP IN BLK CADILLAC ESCALADE VS SD TYPE VEH BLKG  FAST LNS[Shared]<br /></p>
+        
+        <p class="iw-attribution">
+            Information courtesy of <strong>CHP</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:25am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#chp</styleUrl>
+  <Point><coordinates>-117.770929,34.024031,0</coordinates></Point>
+</Placemark>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/CHPIncidentInfo.png?v=4" />
+            CHP Incident 261112ST0069
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">1125-Traffic Hazard</h2>
+        
+        <p class="iw-text">Nov 12 2026  7:16AM <br> Kile Rd / N Cord Rd</p>
+        <p class="iw-text">Nov 12 2026  7:18AM [1] LRG AMOUNT OF DEBRIS and TRASH ACROSS THE BOTH LNS OF TRFC <br /></p>
+        
+        <p class="iw-attribution">
+            Information courtesy of <strong>CHP</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:25am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#chp</styleUrl>
+  <Point><coordinates>-121.409972,38.217937,0</coordinates></Point>
+</Placemark>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/FullClosures.png?v=4" />
+            CHP Incident 261112GG0347
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">CLOSURE of a Road</h2>
+        
+        <p class="iw-text">Nov 12 2026  6:33AM <br> Sr1 / 14th St</p>
+        <p class="iw-text"></p>
+        
+        <p class="iw-attribution">
+            Information courtesy of <strong>CHP</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:25am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#full-closure</styleUrl>
+  <Point><coordinates>-122.51751,37.537275,0</coordinates></Point>
+</Placemark>
+<Placemark>
+  <name> </name>
+  <description><![CDATA[<link rel="stylesheet" type="text/css" href="https://quickmap.dot.ca.gov/css/gm-infowindow.css?v=9" />
+<div class="infowindow-content">
+    <div class="iw-header">
+        <div class="iw-header-left">
+            <img class="iw-icon" src="https://quickmap.dot.ca.gov/img/v2/CHPIncidentInfo.png?v=4" />
+            CHP Incident 261112LA0480
+        </div>
+    </div>
+
+    <div class="iw-body">
+        <h2 class="iw-title">20001-Hit and Run w/Injuries</h2>
+        
+        <p class="iw-text">Nov 12 2026  7:13AM <br> I405 N / La Tijera Blvd</p>
+        <p class="iw-text">Nov 12 2026  7:24AM [13] LAST FLOCK HIT 11/17 @ 1917<br />Nov 12 2026  7:19AM [9] RP CONTINUED ON ADVS MC IS STILL BLOCKING HOV LANE <br />Nov 12 2026  7:15AM [1] VV: MC --- BLOCKING HOV LANE <br /></p>
+        
+        <p class="iw-attribution">
+            Information courtesy of <strong>CHP</strong>
+        </p>
+    </div>
+
+    <div class="iw-footer">
+        <span class="iw-timestamp">Last updated: <strong>11/12/2026</strong> 7:25am</span>
+    </div>
+</div>]]></description>
+  <styleUrl>#chp</styleUrl>
+  <Point><coordinates>-118.3778,33.971825,0</coordinates></Point>
+</Placemark>
+</Document>
+</kml>

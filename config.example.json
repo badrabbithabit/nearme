@@ -1,0 +1,10 @@
+{
+  "at": "home",
+  "radius_mi": 15,
+  "layers": ["chp_incidents", "lane_closures"],
+  "places": {
+    "home": "38.5816,-121.4944",
+    "work": "38.555,-121.5",
+    "gym": "38.6,-121.35"
+  }
+}

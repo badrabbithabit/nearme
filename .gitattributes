@@ -1,0 +1,9 @@
+# Normalize line endings: store LF, check out LF.
+# Git for Windows ships core.autocrlf=true system-wide, which would rewrite
+# every Python/JS file to CRLF on checkout and cause whole-file diffs.
+* text=auto eol=lf
+
+# Binary assets (no conversion, no diff noise)
+*.png binary
+*.jpg binary
+*.zip binary
