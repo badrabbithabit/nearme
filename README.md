@@ -2,7 +2,8 @@
 
 CLI that answers one question fast: **are there lane closures near me right now**,
 using CHP incident reports (including what motorists phoned in) plus the Caltrans
-Lane Closure System.
+Lane Closure System. There is also a map — `python server.py` for the full live
+version, or GitHub Pages for a snapshot build (see [The map](#the-map)).
 
 ```
 python nearme.py near --at 95616 --radius 20 --lanes-only
@@ -69,6 +70,44 @@ does conditional GETs, caches in `.cache/`, refuses to re-fetch faster than
   `[Shared]` record from the neighbouring com centre); those are merged, and both
   IDs are shown.
 
+## The map
+
+```
+python server.py                    # http://127.0.0.1:8388
+python server.py --port 9000 --layers chp_incidents,lane_closures,chain_controls
+```
+
+Stdlib only. `server.py` fetches QuickMap at most once per `--refresh` (90 s) no
+matter how many tabs poll, serves `web/` (vanilla JS + vendored Leaflet), and
+exposes `/api/events` (GeoJSON, filtered server-side), `/api/meta`,
+`/api/geocode`, `/api/refresh`. The browser never touches the state agency.
+
+### Hosting it on GitHub Pages (no server)
+
+Pages serves files, not processes, so the published map is a **snapshot**:
+
+```
+python build_site.py --out _site    # copies web/ + writes nearme.json (one statewide FeatureCollection)
+```
+
+`.github/workflows/publish.yml` does that on a 30-minute schedule (and on push)
+and deploys `_site` with the official Pages actions. The app probes `/api/meta` at
+boot; when nothing answers it switches to **static mode** and `web/static.js`
+filters `nearme.json` in the browser — bbox, severity, radius.
+
+That is a second implementation of the same filtering rules, so
+`TestStaticParity` runs `web/static.js` under Node and diffs its output against
+`src/nearme/api.py` for seven query shapes (including the case only the bbox pad
+can catch). Change one side without the other and the CI job fails.
+
+What differs in static mode: the data is up to ~30–45 min stale and the UI says so;
+polling is every 5 min instead of 90 s; place search calls Nominatim directly
+instead of `/api/geocode`; and a build whose feeds parse to zero events exits
+non-zero, so a flaky upstream leaves the last good deployment in place.
+
+`python tests/smoke_browser.py` (needs Playwright) boots both modes in headless
+Chromium and fails if either renders an empty map or throws in the console.
+
 ## Flags
 
 `--at` coordinates (`"38.58,-121.49"`), ZIP, place name, or a name from
@@ -92,9 +131,11 @@ Copy `config.example.json` → `config.json` (gitignored):
 python tests/test_nearme.py
 ```
 
-26 tests, offline. `tests/fixtures/*.kml` are real placemarks trimmed from live
-responses, so they pin the actual upstream format (MultiGeometry closure traces,
-`[Appended, 07:04:13]` note prefixes, doubled unit tags, `LNS OF TRFC` shorthand).
+Offline, no third-party deps. `tests/fixtures/*.kml` are real placemarks trimmed
+from live responses, so they pin the actual upstream format (MultiGeometry closure
+traces, `[Appended, 07:04:13]` note prefixes, doubled unit tags, `LNS OF TRFC`
+shorthand). The parity test shells out to Node when it is on PATH and skips
+otherwise.
 
 ## Honest limits
 

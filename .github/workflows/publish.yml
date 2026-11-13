@@ -1,0 +1,68 @@
+name: publish map
+
+# GitHub Pages hosts files, not the Python server, so the map is a snapshot:
+# this workflow fetches QuickMap, runs build_site.py, and deploys _site.
+# The schedule is what keeps the public map fresh; GitHub's cron is best-effort
+# and can start a run 5-20 minutes late, which is why the UI shows the snapshot
+# age instead of pretending it is live.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "src/**"
+      - "build_site.py"
+      - ".github/workflows/publish.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # offline: fixtures are trimmed real placemarks; the parity test diffs
+      # web/static.js against src/nearme/api.py
+      - run: python tests/test_nearme.py
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # build_site.py exits non-zero if a feed parses to zero events, so a flaky
+      # upstream leaves the last good deployment in place instead of a blank map.
+      - run: python build_site.py --out _site --cache-dir /tmp/nearme-cache
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
