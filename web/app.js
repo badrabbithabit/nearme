@@ -46,16 +46,19 @@ const fmtAgo = (s) =>
 const map = L.map("map", { preferCanvas: true, zoomControl: true }).setView([38.6, -120.6], 6);
 
 const bases = {
-  "Dark (CARTO)": L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
-  }),
+  // CARTO's basemaps used to be key-free and now serve an "API KEY REQUIRED"
+  // watermark tile instead (200 OK, so it fails silently) - don't come back
+  // here without a key.
   "Streets (OSM)": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "&copy; OpenStreetMap contributors",
   }),
+  "Satellite (Esri)": L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 18, attribution: "Tiles &copy; Esri" }
+  ),
 };
-bases["Dark (CARTO)"].addTo(map);
+bases["Streets (OSM)"].addTo(map);
 L.control.layers(bases, null, { position: "bottomright" }).addTo(map);
 
 state.layers.markers = L.layerGroup().addTo(map);

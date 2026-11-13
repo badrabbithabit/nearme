@@ -1,5 +1,7 @@
 # nearme — "what's closed on my way?"
 
+**Live map (snapshot, rebuilt every 30 min): <https://badrabbithabit.github.io/nearme/>**
+
 CLI that answers one question fast: **are there lane closures near me right now**,
 using CHP incident reports (including what motorists phoned in) plus the Caltrans
 Lane Closure System. There is also a map — `python server.py` for the full live
@@ -143,6 +145,9 @@ otherwise.
   change or start blocking scripts. Attribution belongs to CHP / Caltrans.
 * Statewide KML ≈ 250–700 KB per fetch; fine by hand, don't poll sub-second.
 * Nominatim (OSM) geocoding has a 1 req/s courtesy limit and results are cached.
+* Basemap tiles are third-party too: OSM and Esri World Imagery are key-free,
+  CARTO's basemaps now demand an API key (and silently serve a watermark tile
+  without one). All three are usage-policy-limited — this is a personal tool.
 * Incident coordinates are approximate (often an cross-street centroid), and CHP
   "Area" labels are city-level. A 1-mile radius will miss things; 5–15 mi is sane.
 * Distances to closures use the polyline when available, so a 3-mile-long

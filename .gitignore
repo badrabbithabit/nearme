@@ -13,3 +13,6 @@ __pycache__/
 venv/
 .pytest_cache/
 _site/
+
+# screenshots dropped in the repo root by verification runs
+/*.png
