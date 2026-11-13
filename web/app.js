@@ -1,4 +1,13 @@
-/* nearme map UI. Vanilla JS + Leaflet. Talks only to the local /api. */
+/* nearme map UI. Vanilla JS + Leaflet.
+
+Two modes, decided at boot by whether /api/meta answers:
+  server  - `python server.py`: the local API fetches QuickMap and filters.
+  static  - GitHub Pages: no server exists, so one `nearme.json` snapshot
+            (rebuilt by .github/workflows/publish.yml) is filtered here instead.
+The static path mirrors server.py/src/nearme/api.py: bbox with a 0.04 deg pad on
+the point OR the pavement trace, severity set, and haversine/point-to-polyline
+radius around the anchor. Keep the two in step or the published map will quietly
+agree with the local one only by accident. */
 "use strict";
 
 const LEVEL_ORDER = ["full", "one_way", "lanes", "shoulder", "blocked", "none"];
@@ -21,6 +30,8 @@ const state = {
   layers: { markers: null, traces: null, me: null },
   meta: null,
   pollTimer: null,
+  mode: "server", // "server" | "static" (see the header comment)
+  snapshot: null, // static mode: {type:"FeatureCollection", nearme:{...}}
 };
 
 const $ = (id) => document.getElementById(id);
@@ -85,6 +96,52 @@ async function loadMeta() {
   setFeed(state.meta.feeds, state.meta.error);
 }
 
+/* ------------------------------------------------- static (Pages) mode */
+/* The filtering itself lives in static.js (pure, Node-testable) because it has
+   to stay identical to what api.py does server-side. */
+const STATIC_FILE = "nearme.json";
+
+async function loadSnapshot() {
+  // Cache-bust on the ~5 min grid so a poll actually sees a new build.
+  const fc = await getJSON(`${STATIC_FILE}?v=${Math.floor(Date.now() / 300000)}`);
+  NearmeStatic.prepareAll(fc.features || []);
+  state.snapshot = fc;
+  return fc;
+}
+
+function staticEvents() {
+  if (!state.snapshot) return [];
+  const b = map.getBounds();
+  return NearmeStatic.filterFeatures(state.snapshot.features, {
+    bbox: { west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() },
+    levels: state.levels,
+    center: state.me ? [state.me.lat, state.me.lon] : null,
+    radius: state.me && Number($("radius").value) > 0 ? Number($("radius").value) : null,
+  });
+}
+
+function setSnapshotAge(generatedAt) {
+  const age = Date.now() / 1000 - generatedAt;
+  $("feed").textContent = `snapshot ${fmtAgo(age)} · a scheduled job rebuilds it every ~30 min`;
+}
+
+
+async function geocode(q) {
+  if (state.mode === "static") {
+    // No server to proxy this through, so ask OSM directly. One request per
+    // explicit search - never in the poll loop.
+    const r = await fetch(
+      "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=" +
+        encodeURIComponent(q),
+      { headers: { Accept: "application/json" } }
+    );
+    const rows = await r.json().catch(() => []);
+    if (!r.ok || !rows.length) throw new Error("no match for " + q);
+    return { lat: +rows[0].lat, lon: +rows[0].lon, label: rows[0].display_name };
+  }
+  return getJSON("/api/geocode?q=" + encodeURIComponent(q));
+}
+
 function setFeed(feeds, error) {
   const ages = Object.values(feeds || {})
     .filter((f) => f.fetched)
@@ -108,7 +165,10 @@ async function loadEvents() {
     p.set("lon", state.me.lon);
     if (radius > 0) p.set("within", radius);
   }
-  const fc = await getJSON("/api/events?" + p.toString());
+  const fc =
+    state.mode === "static"
+      ? { features: staticEvents(), nearme: state.snapshot.nearme }
+      : await getJSON("/api/events?" + p.toString());
   state.features = fc.features;
   const now = Date.now();
   state.features.forEach((f) => {
@@ -117,7 +177,8 @@ async function loadEvents() {
   });
   const counts = $("count");
   counts.innerHTML = `<strong>${fc.features.length}</strong> shown / ${fc.nearme.total} live`;
-  setFeedFromStatuses(fc.nearme.statuses);
+  if (state.mode === "static") setSnapshotAge(fc.nearme.generated_at);
+  else setFeedFromStatuses(fc.nearme.statuses);
   render();
 }
 
@@ -334,7 +395,7 @@ $("searchForm").addEventListener("submit", async (e) => {
   if (!q) return;
   flash("searching…");
   try {
-    const g = await getJSON("/api/geocode?q=" + encodeURIComponent(q));
+    const g = await geocode(q);
     setMe(g.lat, g.lon, g.label.split(",")[0]);
     map.flyTo([g.lat, g.lon], 10);
   } catch (err) {
@@ -351,8 +412,13 @@ $("radius").onchange = () => {
 $("srcChp").onchange = $("srcCa").onchange = render;
 $("refreshBtn").onclick = async () => {
   flash("refreshing…");
-  await getJSON("/api/refresh");
-  await loadMeta();
+  if (state.mode === "static") {
+    await loadSnapshot();
+    setSnapshotAge(state.snapshot.nearme.generated_at);
+  } else {
+    await getJSON("/api/refresh");
+    await loadMeta();
+  }
   await loadEvents();
 };
 
@@ -376,7 +442,11 @@ document.addEventListener("keydown", (e) => {
 
 async function poll() {
   try {
-    await loadMeta();
+    if (state.mode === "static") {
+      await loadSnapshot();
+    } else {
+      await loadMeta();
+    }
     await loadEvents();
   } catch (err) {
     $("feed").textContent = "poll failed: " + err.message;
@@ -384,9 +454,28 @@ async function poll() {
   state.pollTimer = setTimeout(poll, (state.meta?.refresh_seconds || 90) * 1000);
 }
 
-loadMeta()
-  .then(poll)
-  .catch((err) => {
-    flash("cannot reach the local API");
-    $("feed").textContent = err.message;
-  });
+/* Boot: the /api probe decides which mode we are in. On Pages the request
+   404s (HTML body), which getJSON turns into an exception. */
+(async function boot() {
+  try {
+    state.meta = await getJSON("/api/meta");
+    state.mode = "server";
+    $("attrib").textContent = state.meta.attribution;
+    if (!$("chips").childElementCount) buildChips(state.meta.levels);
+    setFeed(state.meta.feeds, state.meta.error);
+  } catch (err) {
+    try {
+      await loadSnapshot();
+    } catch (err2) {
+      flash("cannot reach the local API or nearme.json");
+      $("feed").textContent = err2.message;
+      return;
+    }
+    state.mode = "static";
+    state.meta = state.snapshot.nearme;
+    $("attrib").textContent = state.meta.attribution;
+    if (!$("chips").childElementCount) buildChips(state.meta.levels);
+    setSnapshotAge(state.meta.generated_at);
+  }
+  poll();
+})();

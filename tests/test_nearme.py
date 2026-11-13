@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import unittest
 from datetime import datetime
@@ -278,6 +281,86 @@ class TestGeocodeParsing(unittest.TestCase):
     def test_not_coordinates(self):
         self.assertIsNone(parse_point("95814"))
         self.assertIsNone(parse_point("Sacramento, CA"))
+
+
+class TestStaticParity(unittest.TestCase):
+    """web/static.js (the GitHub Pages build, which has no server) must filter
+    exactly like api.py (which the local server uses). Two implementations of one
+    rule set - this test is what keeps them from drifting apart."""
+
+    def setUp(self):
+        self.node = shutil.which("node")
+        if not self.node:
+            self.skipTest("node not on PATH")
+        events = load("chp.kml", "chp", "chp_incidents") + load("lcs.kml", "caltrans", "lane_closures")
+        self.events = classify_all(dedupe(events))
+
+    def queries(self):
+        qs = [
+            {"key": "statewide"},
+            {"key": "bbox_sac", "bbox": (-121.7, 38.4, -121.3, 38.8)},
+            {"key": "levels", "levels": ["full", "lanes"]},
+            {"key": "center", "center": SAC},
+            {"key": "within_5", "center": SAC, "radius": 5.0},
+            {"key": "bbox+center+within", "bbox": (-121.7, 38.4, -121.3, 38.8), "center": SAC, "radius": 20.0},
+        ]
+        traced = next((e for e in self.events if e.path), None)
+        if traced:
+            # A box around one vertex of a pavement trace: only the 0.04 deg pad in
+            # in_bbox() can catch this closure, so it exercises the pad rule.
+            lat, lon = traced.path[len(traced.path) // 2]
+            qs.append({"key": "trace_only", "bbox": (lon - 0.002, lat - 0.002, lon + 0.002, lat + 0.002)})
+        return qs
+
+    def run_js(self, snapshot, queries):
+        payload = json.dumps({"snapshot": snapshot, "queries": queries})
+        proc = subprocess.run(
+            [self.node, os.path.join(os.path.dirname(__file__), "static_parity.js")],
+            input=payload.encode("utf-8"),
+            capture_output=True,
+        )
+        if proc.returncode:
+            self.fail(f"node harness failed: {proc.stderr.decode('utf-8', 'replace')}")
+        return json.loads(proc.stdout.decode("utf-8"))
+
+    def test_js_matches_python(self):
+        snapshot = events_as_geojson(self.events)  # what build_site.py publishes
+        queries = self.queries()
+        got = {r["key"]: r["features"] for r in self.run_js(snapshot, queries)}
+        self.assertEqual(len(got), len(queries))
+        for q in queries:
+            want = events_as_geojson(
+                self.events,
+                bbox=q.get("bbox"),
+                levels=q.get("levels"),
+                center=q.get("center"),
+                within=q.get("radius"),
+            )
+            expected = {
+                f["properties"]["uid"]:
+                    f["properties"].get("distance_mi") for f in want["features"]
+            }
+            actual = {f["uid"]: f["distance_mi"] for f in got[q["key"]]}
+            if q.get("bbox") and q["key"] in ("bbox_sac", "trace_only"):
+                # guard against a filter that silently drops everything
+                self.assertTrue(expected, f"{q['key']}: python found nothing to compare")
+                self.assertTrue(actual, f"{q['key']}: js found nothing")
+            self.assertEqual(
+                set(actual), set(expected), f"{q['key']}: feature sets differ ({len(expected)} python)"
+            )
+            for uid, d in expected.items():
+                if d is None:
+                    self.assertIsNone(actual[uid], f"{q['key']}/{uid}: distance leaked in")
+                else:
+                    self.assertAlmostEqual(
+                        actual[uid], d, delta=0.02, msg=f"{q['key']}/{uid}: {actual[uid]} != {d}"
+                    )
+
+    def test_snapshot_is_loadable_by_the_browser_filter(self):
+        snapshot = events_as_geojson(self.events)
+        got = self.run_js(snapshot, [{"key": "statewide"}])[0]["features"]
+        self.assertGreater(len(got), 0)
+        self.assertEqual(len(got), len(snapshot["features"]))
 
 
 if __name__ == "__main__":
