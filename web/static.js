@@ -9,8 +9,9 @@
      src/nearme/api.py  - in_bbox() (0.04 deg pad, point OR pavement trace),
                           level filter, "within N miles of the anchor"
 
-   Pure functions, no DOM: tests/test_static_parity.js runs this under Node and
-   compares against the Python output. Do not "improve" one side alone. */
+   Pure functions, no DOM: tests/static_parity.js runs this under Node and
+   compares against the Python output (driven by TestStaticParity in
+   tests/test_nearme.py). Do not "improve" one side alone. */
 (function (root, factory) {
   var api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;

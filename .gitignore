@@ -16,3 +16,6 @@ _site/
 
 # screenshots dropped in the repo root by verification runs
 /*.png
+
+# dev server pid file (devserver.sh)
+.server.pid

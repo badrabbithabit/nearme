@@ -33,6 +33,69 @@ def wait(url: str, seconds: float = 10.0) -> bool:
     return False
 
 
+def interactions(page, label: str) -> list[str]:
+    """Things that broke once and would look fine in a screenshot.
+
+    a) severity chips: filtered() once ignored state.levels, so clicking a chip
+       changed nothing but the chip's styling;
+    b) the "N shown" counter: it used to report the fetched set, not the filtered
+       set, so it disagreed with the list below it;
+    c) row-click popups: flyTo() fires moveend -> refetch -> render() ->
+       clearLayers(), which used to remove the popup the click had just opened.
+    """
+    problems = []
+    all_count = page.evaluate("() => document.getElementById('count').textContent")
+
+    # (a) keep only the first severity ("full closure") and re-render
+    page.evaluate(
+        "() => document.querySelectorAll('#chips .chip').forEach((c, i) => { if (i) c.click(); })"
+    )
+    page.wait_for_timeout(1800)
+    levels = page.evaluate("() => [...state.levels]")
+    shown = page.evaluate("() => filtered().length")
+    markers = page.evaluate("() => state.layers.markers.getLayers().length")
+    bad = page.evaluate("() => filtered().filter(f => !state.levels.has(f.properties.level)).length")
+    if levels != ["full"]:
+        problems.append(f"chips left levels {levels}, expected ['full']")
+    if bad:
+        problems.append(f"{bad} rendered features are outside the selected severities")
+    if shown == 0 or markers == 0:
+        problems.append("full-closure filter rendered nothing")
+
+    # (b) counter must agree with what is actually drawn
+    count_txt = page.evaluate("() => document.getElementById('count').textContent")
+    if not count_txt.strip().startswith(str(shown)):
+        problems.append(f"counter says {count_txt!r} but {shown} features pass the filters ({all_count!r} before)")
+    if count_txt == all_count:
+        problems.append("counter did not change when the filters did")
+
+    # (c) open a popup from the list; the flyTo it triggers fires moveend ->
+    # refetch -> clearLayers() about 0.5-1s later, which used to eat the popup.
+    # Assert it is still open AFTER that settles, not merely that it appeared.
+    page.evaluate(
+        "() => document.querySelectorAll('#chips .chip').forEach((c, i) => { if (i) c.click(); })"
+    )
+    page.wait_for_timeout(1500)
+    uid = page.evaluate(
+        "() => { const li = document.querySelector('#list li'); window.__clicked = li.dataset.uid; li.click(); return window.__clicked; }"
+    )
+    page.wait_for_timeout(4500)  # past the 450ms moveend debounce plus the refetch
+    got = page.evaluate(
+        "() => { const el = document.querySelector('.leaflet-popup-content');"
+        " const f = state.features.find((x) => x.properties.uid === window.__clicked);"
+        " return { text: el ? el.innerText : '', kind: f ? f.properties.kind : '', openUid: state.openUid }; }"
+    )
+    if not got["text"]:
+        problems.append("list-row popup vanished during the post-flyTo refetch")
+    elif len(got["text"]) < 40:
+        problems.append(f"popup looks empty: {got['text'][:60]!r}")
+    elif got["kind"] and got["kind"].lower() not in got["text"].lower():
+        problems.append(f"popup is not the clicked record ({got['kind']!r}, uid {uid})")
+    elif got["openUid"] != uid:
+        problems.append(f"openUid is {got['openUid']!r}, expected {uid!r}")
+    return problems
+
+
 def check(page, label: str, expect_mode: str) -> bool:
     page.goto(f"http://127.0.0.1:{PORTS[label]}/", wait_until="load")
     page.wait_for_function("() => document.querySelectorAll('#list li').length > 0", timeout=20000)
@@ -63,6 +126,7 @@ def check(page, label: str, expect_mode: str) -> bool:
     if expect_mode == "static":
         problems = [p for p in problems if "/api/meta" not in p and "404" not in p]
     print(f"  {label}: mode={mode} rows={rows} markers={markers} traces={traces} | {count} | {feed}")
+    problems += interactions(page, label)
     for p in problems:
         print(f"    !! {p}")
     return not problems

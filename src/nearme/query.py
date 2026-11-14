@@ -25,7 +25,12 @@ def _merge_dupes(events: list[Event]) -> list[Event]:
             out.append(e)
             continue
         lat, lon = e.geometry[1]
-        key = ((e.kind or "").lower(), round(lat, 2), round(lon, 2))
+        # The same call is published twice with kinds that differ only by a
+        # missing space ("1179-Trfc Collision-1141Enrt" vs "...1141 Enrt"), which
+        # used to leave one crash on the list as two rows. Compare kinds with all
+        # whitespace removed; the display text is left untouched.
+        kind = re.sub(r"\s+", "", e.kind or "").lower()
+        key = (kind, round(lat, 2), round(lon, 2))
         merged = False
         for prev in buckets.setdefault(key, []):
             plat, plon = prev.geometry[1]

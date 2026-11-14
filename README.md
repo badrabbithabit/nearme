@@ -77,7 +77,13 @@ does conditional GETs, caches in `.cache/`, refuses to re-fetch faster than
 ```
 python server.py                    # http://127.0.0.1:8388
 python server.py --port 9000 --layers chp_incidents,lane_closures,chain_controls
+./devserver.sh start|stop|restart   # PID-file wrapper, so restarting is safe
 ```
+
+Use `devserver.sh` while developing. `taskkill /F /IM python.exe` is **not** a way
+to stop this server on this machine: that image name also matches the user's
+Strata model server (`127.0.0.1:8081`) and SearXNG (`127.0.0.1:8888`), and has
+already taken both down. `devserver.sh` writes `.server.pid` and kills only that.
 
 Stdlib only. `server.py` fetches QuickMap at most once per `--refresh` (90 s) no
 matter how many tabs poll, serves `web/` (vanilla JS + vendored Leaflet), and
@@ -108,7 +114,12 @@ instead of `/api/geocode`; and a build whose feeds parse to zero events exits
 non-zero, so a flaky upstream leaves the last good deployment in place.
 
 `python tests/smoke_browser.py` (needs Playwright) boots both modes in headless
-Chromium and fails if either renders an empty map or throws in the console.
+Chromium and fails if either renders an empty map or throws in the console. It also
+drives the UI: the severity chips must actually filter, the "N shown" counter must
+agree with what is drawn, and a popup opened from the list must still be open after
+the map flies to it (that fly triggers a refetch which used to clear the layer
+group underneath). All three were live bugs, and the checks were verified by
+re-breaking `web/app.js` — a check that cannot fail is not a check.
 
 ## Flags
 

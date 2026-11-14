@@ -24,6 +24,9 @@ const MARK_R = { full: 11, one_way: 9, lanes: 8, shoulder: 6, blocked: 6, none: 
 const state = {
   me: null, // {lat, lon, label}
   levels: new Set(LEVEL_ORDER),
+  total: 0, // live statewide total from the last fetch
+  openUid: null, // popup the reader opened last; re-shown after a redraw
+  redrawing: false,
   features: [],
   byUid: new Map(),
   seen: new Map(), // uid -> first-seen epoch ms
@@ -179,7 +182,7 @@ async function loadEvents() {
     if (!state.seen.has(uid)) state.seen.set(uid, now);
   });
   const counts = $("count");
-  counts.innerHTML = `<strong>${fc.features.length}</strong> shown / ${fc.nearme.total} live`;
+  state.total = fc.nearme.total; // render() paints the count from what survives the filters
   if (state.mode === "static") setSnapshotAge(fc.nearme.generated_at);
   else setFeedFromStatuses(fc.nearme.statuses);
   render();
@@ -254,12 +257,17 @@ function filtered() {
   const keep = new Set();
   if ($("srcChp").checked) keep.add("chp");
   if ($("srcCa").checked) keep.add("caltrans");
-  return state.features.filter((f) => keep.has(f.properties.source));
+  return state.features.filter(
+    (f) => keep.has(f.properties.source) && state.levels.has(f.properties.level)
+  );
 }
 
 function render() {
+  const reopen = state.openUid;
+  state.redrawing = true;
   state.layers.markers.clearLayers();
   state.layers.traces.clearLayers();
+  state.redrawing = false;
   state.byUid.clear();
 
   for (const f of filtered()) {
@@ -278,6 +286,10 @@ function render() {
       });
       m.bindPopup(popupHTML(f), { maxWidth: 400 });
       m.on("click", () => highlightRow(p.uid));
+      m.on("popupopen", () => (state.openUid = p.uid));
+      m.on("popupclose", () => {
+        if (!state.redrawing) state.openUid = null;
+      });
       state.layers.markers.addLayer(m);
       state.byUid.set(p.uid, m);
     }
@@ -287,6 +299,10 @@ function render() {
         { color: p.color, weight: p.level === "full" ? 5 : 3, opacity: 0.75, dashArray: "6,6" }
       );
       line.bindPopup(popupHTML(f), { maxWidth: 400 });
+      line.on("popupopen", () => (state.openUid = p.uid));
+      line.on("popupclose", () => {
+        if (!state.redrawing) state.openUid = null;
+      });
       state.layers.traces.addLayer(line);
       if (f.geometry.type === "LineString") state.byUid.set(p.uid, line);
     }
@@ -295,6 +311,11 @@ function render() {
 }
 
 function renderList() {
+  $("count").innerHTML = `<strong>${filtered().length}</strong> shown / ${state.total} live`;
+  // A popup opened by a list-row click survives the redraw: flyTo() fires
+  // moveend, which refetches and re-renders, and clearLayers() would otherwise
+  // yank the popup out from under the reader mid-click.
+  const reopen = state.openUid;
   const ul = $("list");
   ul.innerHTML = "";
   const pts = filtered().filter((f) => f.properties.distance_mi != null);
@@ -332,6 +353,15 @@ function renderList() {
   });
   if (!rows.length)
     ul.innerHTML = `<li style="cursor:default;color:#7d8794">Nothing reported here for these filters. Zoom out or re-enable severities.</li>`;
+  if (reopen) {
+    const m = state.byUid.get(reopen);
+    if (m) {
+      m.openPopup();
+      highlightRow(reopen);
+    } else {
+      state.openUid = null; // it left the viewport / got filtered out
+    }
+  }
 }
 
 function highlightRow(uid) {

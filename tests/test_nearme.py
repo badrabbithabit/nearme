@@ -175,6 +175,46 @@ class TestDedupe(unittest.TestCase):
         self.assertEqual(sorted(merged[0].ids), ["A", "B"])
         self.assertEqual(len(merged[0].notes), 2)
 
+    def test_kind_whitespace_variant_merges(self):
+        """Regression: CHP publishes the same crash as '...1141Enrt' and
+        '...1141 Enrt'. One space used to mean two rows in the list."""
+        from nearme.model import Event, Note
+
+        mk = lambda i, kind: Event(
+            source="chp",
+            layer="chp_incidents",
+            event_id=i,
+            title=kind,
+            kind=kind,
+            geometry=("point", (38.648133, -121.529108)),
+            occurred=datetime(2026, 11, 13, 6, 8 if i == "local" else 12),
+            notes=[Note(None, "105 CPZ VEH OT IN CD")],
+            ids=[i],
+        )
+        merged = _merge_dupes(
+            [mk("local", "1179-Trfc Collision-1141 Enrt"), mk("fsp", "1179-Trfc Collision-1141Enrt")]
+        )
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(sorted(merged[0].ids), ["fsp", "local"])
+
+    def test_different_calls_at_one_coordinate_stay_separate(self):
+        """Rounded coordinates collide: a road condition and a missing-person
+        call at the same point are two events, and must not be merged."""
+        from nearme.model import Event
+
+        mk = lambda i, kind: Event(
+            source="chp",
+            layer="chp_incidents",
+            event_id=i,
+            title=kind,
+            kind=kind,
+            geometry=("point", (34.05, -118.25)),
+            occurred=datetime(2026, 11, 13, 1, 0),
+            ids=[i],
+        )
+        merged = _merge_dupes([mk("a", "1013-Road/Weather Conditions"), mk("b", "FEATHER-Missing Indigenous")])
+        self.assertEqual(len(merged), 2)
+
 
 class TestLineDedupe(unittest.TestCase):
     def test_line_geometry_survives_dedupe(self):
